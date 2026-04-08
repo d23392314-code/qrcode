@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QR Generator Pro</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+        body {
+            background-color: #12121F;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+            color: white;
+        }
+        .container {
+            width: 100%;
+            max-width: 400px;
+            background-color: #1E1E2F;
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+        }
+
+        /* Style Tab */
+        .tabs {
+            display: flex;
+            background-color: #2A2A3C;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+        .tab {
+            flex: 1;
+            text-align: center;
+            padding: 12px;
+            font-size: 14px;
+            cursor: pointer;
+            color: #aaa;
+            transition: 0.3s;
+        }
+        .tab.active {
+            background-color: #3B82F6;
+            color: white;
+            font-weight: bold;
+        }
+
+        /* Warna & Input */
+        .color-row {
+            display: flex;
+            justify-content: space-between;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .color-box {
+            flex: 1;
+        }
+        .color-label {
+            font-size: 13px;
+            color: #ccc;
+            margin-bottom: 8px;
+            display: block;
+        }
+        .color-picker-wrapper {
+            display: flex;
+            align-items: center;
+            background-color: #2A2A3C;
+            border-radius: 10px;
+            padding: 8px 12px;
+            border: 1px solid #444;
+        }
+        .color-circle {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            border: 2px solid #fff;
+            margin-right: 10px;
+            box-shadow: 0 0 5px rgba(255,255,255,0.2);
+        }
+        .color-code {
+            font-family: monospace;
+            font-size: 16px;
+            color: #eee;
+        }
+        input[type="color"] {
+            display: none;
+        }
+
+        /* Dropdown Style */
+        .select-row {
+            display: flex;
+            justify-content: space-between;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        .select-box {
+            flex: 1;
+        }
+        select {
+            width: 100%;
+            background-color: #2A2A3C;
+            color: white;
+            border: 1px solid #444;
+            border-radius: 10px;
+            padding: 12px;
+            font-size: 16px;
+            outline: none;
+            appearance: none;
+            background-image: url('data:image/svg+xml;charset=US-ASCII,<svg width="16" height="16" viewBox="0 0 4 5" xmlns="http://www.w3.org/2000/svg"><path fill="%23aaa" d="M2 0L0 2h4zm0 5L0 3h4z"/></svg>');
+            background-repeat: no-repeat;
+            background-position: right 12px top 50%;
+        }
+
+        /* Tombol */
+        .btn-update {
+            width: 100%;
+            padding: 15px;
+            background-color: #3B82F6;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-bottom: 25px;
+            box-shadow: 0 5px 15px rgba(59, 130, 246, 0.4);
+        }
+
+        /* Hasil QR */
+        #qrcode-container {
+            background-color: white;
+            border-radius: 15px;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            position: relative;
+            min-height: 250px;
+        }
+        #logo {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: white;
+            padding: 5px;
+            object-fit: cover;
+            border: 3px solid white;
+        }
+
+        /* Input URL & Logo */
+        .input-field {
+            width: 100%;
+            background-color: #2A2A3C;
+            border: 1px solid #444;
+            border-radius: 10px;
+            padding: 12px;
+            color: white;
+            margin-bottom: 15px;
+            font-size: 14px;
+        }
+
+        #downloadBtn {
+            width: 100%;
+            padding: 12px;
+            background-color: #22c55e;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            margin-top: 20px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+
+    <!-- Input URL -->
+    <input type="text" id="url-input" class="input-field" placeholder="Masukkan Link / URL..." value="https://">
+
+    <!-- Input Logo -->
+    <input type="file" id="logo-input" class="input-field" accept="image/*">
+
+    <!-- Tabs -->
+    <div class="tabs">
+        <div class="tab active" onclick="switchTab(this)">Warna QR</div>
+        <div class="tab" onclick="switchTab(this)">Background</div>
+    </div>
+
+    <!-- Pilihan Warna -->
+    <div class="color-row">
+        <div class="color-box">
+            <div class="color-picker-wrapper" onclick="document.getElementById('colorDark').click()">
+                <div class="color-circle" id="circleDark" style="background-color: #00FF00;"></div>
+                <span class="color-code" id="codeDark">#00FF00</span>
+            </div>
+            <input type="color" id="colorDark" value="#00FF00">
+        </div>
+        <div class="color-box">
+            <div class="color-picker-wrapper" onclick="document.getElementById('colorLight').click()">
+                <div class="color-circle" id="circleLight" style="background-color: #FFFFFF;"></div>
+                <span class="color-code" id="codeLight">#FFFFFF</span>
+            </div>
+            <input type="color" id="colorLight" value="#FFFFFF">
+        </div>
+    </div>
+
+    <!-- Pilihan Bentuk -->
+    <div class="select-row">
+        <div class="select-box">
+            <label style="font-size:13px; color:#ccc; margin-bottom:8px; display:block;">Bentuk Titik (Dots)</label>
+            <select id="dotType">
+                <option value="round">Dots</option>
+                <option value="square">Square</option>
+                <option value="diamond">Diamond</option>
+            </select>
+        </div>
+        <div class="select-box">
+            <label style="font-size:13px; color:#ccc; margin-bottom:8px; display:block;">Bentuk Sudut</label>
+            <select id="cornerType">
+                <option value="dot">Dot</option>
+                <option value="square">Square</option>
+                <option value="rounded">Rounded</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- Tombol Update -->
+    <button class="btn-update" onclick="generateQR()">
+        <span>↻</span> Update Preview
+    </button>
+
+    <!-- Hasil QR -->
+    <div id="qrcode-container">
+        <div id="qrcode"></div>
+        <img id="logo" style="display: none;" />
+    </div>
+
+    <button id="downloadBtn" onclick="downloadQR()">Download Gambar</button>
+
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+<script>
+    // Fungsi Ganti Warna
+    document.getElementById('colorDark').addEventListener('input', function(){
+        document.getElementById('circleDark').style.backgroundColor = this.value;
+        document.getElementById('codeDark').innerText = this.value.toUpperCase();
+    });
+
+    document.getElementById('colorLight').addEventListener('input', function(){
+        document.getElementById('circleLight').style.backgroundColor = this.value;
+        document.getElementById('codeLight').innerText = this.value.toUpperCase();
+    });
+
+    function switchTab(tab) {
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+    }
+
+    // Fungsi Generate QR
+    function generateQR() {
+        let url = document.getElementById("url-input").value;
+        let colorDark = document.getElementById("colorDark").value;
+        let colorLight = document.getElementById("colorLight").value;
+        let dotType = document.getElementById("dotType").value;
+        let cornerType = document.getElementById("cornerType").value;
+        let logoInput = document.getElementById("logo-input");
+        let logoImg = document.getElementById("logo");
+
+        document.getElementById("qrcode").innerHTML = "";
+        logoImg.style.display = "none";
+
+        // Buat QR Dasar
+        let qrCode = new QRCode(document.getElementById("qrcode"), {
+            text: url,
+            width: 200,
+            height: 200,
+            colorDark: colorDark,
+            colorLight: colorLight,
+            correctLevel: QRCode.CorrectLevel.H
+        });
+
+        // Ubah Bentuk Titik
+        let canvas = document.querySelector("#qrcode canvas");
+        if(canvas){
+            let ctx = canvas.getContext('2d');
+            let imgData = ctx.getImageData(0,0,canvas.width, canvas.height);
+            ctx.clearRect(0,0,canvas.width, canvas.height);
+            let s = 4; // ukuran module
+
+            for(let y=0; y<canvas.height; y+=s){
+                for(let x=0; x<canvas.width; x+=s){
+                    let i = (y * canvas.width + x) * 4;
+                    if(imgData.data[i] === 0){ // Jika hitam
+                        ctx.fillStyle = colorDark;
+                        
+                        if(dotType === 'round'){
+                            ctx.beginPath();
+                            ctx.arc(x+s/2, y+s/2, s/2, 0, Math.PI*2);
+                            ctx.fill();
+                        } else if(dotType === 'diamond'){
+                            ctx.beginPath();
+                            ctx.moveTo(x+s/2, y);
+                            ctx.lineTo(x+s, y+s/2);
+                            ctx.lineTo(x+s/2, y+s);
+                            ctx.lineTo(x, y+s/2);
+                            ctx.closePath();
+                            ctx.fill();
+                        } else {
+                            ctx.fillRect(x,y,s,s);
+                        }
+                    }
+                }
+            }
+        }
+
+        // Masukkan Logo
+        if (logoInput.files && logoInput.files[0]) {
+            let reader = new FileReader();
+            reader.onload = function(e) {
+                logoImg.src = e.target.result;
+                logoImg.style.display = "block";
+            }
+            reader.readAsDataURL(logoInput.files[0]);
+        }
+
+        document.getElementById("downloadBtn").style.display = "block";
+    }
+
+    function downloadQR(){
+        html2canvas(document.querySelector("#qrcode-container")).then(canvas => {
+            let a = document.createElement('a');
+            a.download = 'qr-code.png';
+            a.href = canvas.toDataURL('image/png');
+            a.click();
+        });
+    }
+</script>
+
+</body>
+</html>
+
